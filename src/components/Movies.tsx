@@ -1,18 +1,22 @@
 import React from "react";
 import Movie from "../models/movieTypes";
 import { getMovies } from "../services/fakeMovieService";
+import { paginate } from "../utils/paginate";
 import Like from "./common/Like";
+import Pagination from "./common/Pagination";
 
 interface MoviesProps {}
 
 interface MoviesState {
   movies: Movie[];
+  pageSize: number;
+  currentPage: number;
 }
 
 class Movies extends React.Component<MoviesProps, MoviesState> {
   constructor(props: MoviesProps) {
     super(props);
-    this.state = { movies: getMovies() };
+    this.state = { movies: getMovies(), pageSize: 4, currentPage: 1 };
   }
   handleDelete = (movie: Movie) => {
     const movies = this.state.movies.filter((m) => m._id !== movie._id);
@@ -27,9 +31,17 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
     this.setState({ movies });
   };
 
+  handlePageChange = (page: number) => {
+    this.setState({ currentPage: page });
+  };
+
   render() {
     const { length: count } = this.state.movies;
+    const { pageSize, currentPage, movies: allMovies } = this.state;
     if (count === 0) return <p>There are no movies in the database.</p>;
+
+    const movies = paginate(allMovies, currentPage, pageSize);
+
     return (
       <div>
         <p>Showing {count} movies in the database.</p>
@@ -45,7 +57,7 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
             </tr>
           </thead>
           <tbody>
-            {this.state.movies.map((movie) => (
+            {movies.map((movie) => (
               <tr key={movie._id}>
                 <td>{movie.title}</td>
                 <td>{movie.genre.name}</td>
@@ -69,6 +81,12 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
             ))}
           </tbody>
         </table>
+        <Pagination
+          itemsCount={count}
+          pageSize={pageSize}
+          currentPage={currentPage}
+          onPageChange={this.handlePageChange}
+        />
       </div>
     );
   }
