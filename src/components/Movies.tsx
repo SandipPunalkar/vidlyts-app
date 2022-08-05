@@ -8,12 +8,10 @@ import { paginate } from "../utils/paginate";
 import ListGroup from "./common/ListGroup";
 import Pagination from "./common/Pagination";
 import MoviesTable from "./MoviesTable";
+import sortColumnType from "../models/sortColumnType";
 
 interface MoviesProps {}
-type sortColumnType = {
-  path: string;
-  order: any;
-};
+
 interface MoviesState {
   movies: Movie[];
   genres: Genre[];

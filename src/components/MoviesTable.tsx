@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import Movie from "../models/movieTypes";
-import Like from "./common/Like";
+import ColumnsType from "../models/columnsType";
 
-type sortColumnType = {
-  path: string;
-  order: any;
-};
+import Movie from "../models/movieTypes";
+import sortColumnType from "../models/sortColumnType";
+
+import Like from "./common/Like";
+import TableHeader from "./common/TableHeader";
 
 interface MoviesTableProps {
   movies: Movie[];
@@ -14,10 +14,22 @@ interface MoviesTableProps {
   onLike: (movie: Movie) => void;
   onDelete: (movie: Movie) => void;
 }
+interface MoviesHeaderState {
+  columns: ColumnsType[];
+}
 
-class MoviesTable extends Component<MoviesTableProps> {
+class MoviesTable extends Component<MoviesTableProps, MoviesHeaderState> {
   constructor(props: MoviesTableProps) {
     super(props);
+    this.state = {
+      columns: [
+        { key: "", path: "title", label: "Title" },
+        { key: "", path: "genre.name", label: "Genre" },
+        { key: "", path: "numberInStock", label: "Stock" },
+        { key: "", path: "dailyRentalRate", label: "Rate" },
+        { key: "like", path: "", label: "" },
+      ],
+    };
   }
   raiseSort = (path: string) => {
     const sortColumn = { ...this.props.sortColumn };
@@ -32,19 +44,14 @@ class MoviesTable extends Component<MoviesTableProps> {
     this.props.onSort(sortColumn);
   };
   render() {
-    const { movies, onLike, onDelete } = this.props;
+    const { movies, sortColumn, onLike, onDelete, onSort } = this.props;
     return (
       <table className="table">
-        <thead>
-          <tr>
-            <th onClick={() => this.raiseSort("title")}>Title</th>
-            <th onClick={() => this.raiseSort("genre.name")}>Genre</th>
-            <th onClick={() => this.raiseSort("numberInStock")}>Stock</th>
-            <th onClick={() => this.raiseSort("dailyRentalRate")}>Rate</th>
-            <th />
-            <th />
-          </tr>
-        </thead>
+        <TableHeader
+          columns={this.state.columns}
+          sortColumn={sortColumn}
+          onSort={onSort}
+        />
         <tbody>
           {movies.map((movie) => (
             <tr key={movie._id}>
