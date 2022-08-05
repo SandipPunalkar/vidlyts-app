@@ -1,22 +1,26 @@
 import React from "react";
 import Genre from "../models/genreTypes";
 import Movie from "../models/movieTypes";
+import _ from "lodash";
 import { getGenres } from "../services/fakeGenreService";
 import { getMovies } from "../services/fakeMovieService";
 import { paginate } from "../utils/paginate";
-import Like from "./common/Like";
 import ListGroup from "./common/ListGroup";
 import Pagination from "./common/Pagination";
 import MoviesTable from "./MoviesTable";
 
 interface MoviesProps {}
-
+type sortColumnType = {
+  path: string;
+  order: any;
+};
 interface MoviesState {
   movies: Movie[];
   genres: Genre[];
   pageSize: number;
   currentPage: number;
   selectedGenre: Genre;
+  sortColumn: sortColumnType;
 }
 
 class Movies extends React.Component<MoviesProps, MoviesState> {
@@ -28,6 +32,7 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
       pageSize: 4,
       currentPage: 1,
       selectedGenre: { _id: "", name: "" },
+      sortColumn: { path: "title", order: "asc" },
     };
   }
 
@@ -54,6 +59,10 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
   handleGenreSelect = (genre: Genre) => {
     this.setState({ selectedGenre: genre, currentPage: 1 });
   };
+  handleSort = (sortColumn: sortColumnType) => {
+    this.setState({ sortColumn });
+  };
+
   render() {
     const { length: count } = this.state.movies;
     const {
@@ -61,6 +70,7 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
       currentPage,
       selectedGenre,
       movies: allMovies,
+      sortColumn,
     } = this.state;
     if (count === 0) return <p>There are no movies in the database.</p>;
 
@@ -68,7 +78,10 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
       selectedGenre && selectedGenre._id
         ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
         : allMovies;
-    const movies = paginate(filtered, currentPage, pageSize);
+
+    const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+
+    const movies = paginate(sorted, currentPage, pageSize);
 
     return (
       <div className="row">
@@ -83,6 +96,8 @@ class Movies extends React.Component<MoviesProps, MoviesState> {
           <p>Showing {filtered.length} movies in the database.</p>
           <MoviesTable
             movies={movies}
+            sortColumn={sortColumn}
+            onSort={this.handleSort}
             onLike={this.handleLike}
             onDelete={this.handleDelete}
           />
